@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sun, Calculator, MessageCircle, FileText } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Sun, Calculator, MessageCircle, FileText, User, Loader2 } from "lucide-react";
 import solarHeroBg from "@/assets/solar-hero-bg.jpg";
 
 interface FormData {
@@ -18,6 +19,7 @@ interface FormData {
 
 const SolarLandingPage = () => {
   const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -49,10 +51,21 @@ const SolarLandingPage = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleNextStep = () => {
-    const { name, email, whatsapp, city, energyBill, monthlyConsumption } = formData;
-    if (name && email && whatsapp && city && energyBill && monthlyConsumption) {
+  const handleStep1Next = () => {
+    const { city, energyBill, monthlyConsumption } = formData;
+    if (city && energyBill && monthlyConsumption) {
       setStep(2);
+    }
+  };
+
+  const handleStep2Next = () => {
+    const { name, email, whatsapp } = formData;
+    if (name && email && whatsapp) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setStep(3);
+      }, 3000);
     }
   };
 
@@ -69,7 +82,25 @@ const SolarLandingPage = () => {
     };
   };
 
-  const savings = step === 2 ? calculateSavings() : { monthly: 0, yearly: 0, twentyYear: 0 };
+  const savings = step === 3 ? calculateSavings() : { monthly: 0, yearly: 0, twentyYear: 0 };
+
+  const getStepTitle = () => {
+    switch (step) {
+      case 1: return "Dados de consumo";
+      case 2: return "Seus dados";
+      case 3: return "Sua economia";
+      default: return "";
+    }
+  };
+
+  const getStepIcon = () => {
+    switch (step) {
+      case 1: return Calculator;
+      case 2: return User;
+      case 3: return Sun;
+      default: return Calculator;
+    }
+  };
 
   return (
     <div 
@@ -103,58 +134,39 @@ const SolarLandingPage = () => {
           {/* Form Card */}
           <Card className="max-w-2xl mx-auto bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
             <CardContent className="p-6 md:p-8">
+              {/* Progress Indicator */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-4">
+                  {[1, 2, 3].map((stepNumber) => {
+                    const StepIcon = stepNumber === 1 ? Calculator : stepNumber === 2 ? User : Sun;
+                    return (
+                      <div key={stepNumber} className="flex flex-col items-center">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          stepNumber <= step ? 'bg-i9-blue text-white' : 'bg-gray-200 text-gray-400'
+                        }`}>
+                          <StepIcon className="w-5 h-5" />
+                        </div>
+                        <span className={`text-xs mt-1 ${
+                          stepNumber <= step ? 'text-i9-blue font-medium' : 'text-gray-400'
+                        }`}>
+                          {stepNumber === 1 ? 'Consumo' : stepNumber === 2 ? 'Dados' : 'Resultado'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <Progress value={(step / 3) * 100} className="h-2" />
+              </div>
               {step === 1 ? (
                 <div>
                   <div className="flex items-center mb-6">
                     <Calculator className="w-6 h-6 text-i9-blue mr-2" />
                     <h3 className="text-2xl font-semibold text-i9-blue">
-                      Passo 1: Seus dados
+                      Dados de consumo
                     </h3>
                   </div>
 
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="name" className="text-i9-blue font-medium">
-                        Nome completo *
-                      </Label>
-                      <Input
-                        id="name"
-                        type="text"
-                        placeholder="Digite seu nome completo"
-                        value={formData.name}
-                        onChange={(e) => handleInputChange("name", e.target.value)}
-                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="email" className="text-i9-blue font-medium">
-                        E-mail *
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="seu@email.com"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="whatsapp" className="text-i9-blue font-medium">
-                        WhatsApp *
-                      </Label>
-                      <Input
-                        id="whatsapp"
-                        type="tel"
-                        placeholder="(11) 99999-9999"
-                        value={formData.whatsapp}
-                        onChange={(e) => handleInputChange("whatsapp", e.target.value)}
-                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
-                      />
-                    </div>
-
                     <div>
                       <Label htmlFor="city" className="text-i9-blue font-medium">
                         Cidade *
@@ -203,11 +215,92 @@ const SolarLandingPage = () => {
                   </div>
 
                   <Button
-                    onClick={handleNextStep}
+                    onClick={handleStep1Next}
                     className="w-full mt-6 bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-3 text-lg transition-all duration-300 hover:scale-105"
                   >
-                    Calcular Economia
+                    Próxima Etapa
                   </Button>
+                </div>
+              ) : step === 2 ? (
+                <div>
+                  <div className="flex items-center mb-6">
+                    <User className="w-6 h-6 text-i9-blue mr-2" />
+                    <h3 className="text-2xl font-semibold text-i9-blue">
+                      Seus dados
+                    </h3>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="name" className="text-i9-blue font-medium">
+                        Nome completo *
+                      </Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="Digite seu nome completo"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="email" className="text-i9-blue font-medium">
+                        E-mail *
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="whatsapp" className="text-i9-blue font-medium">
+                        WhatsApp *
+                      </Label>
+                      <Input
+                        id="whatsapp"
+                        type="tel"
+                        placeholder="(11) 99999-9999"
+                        value={formData.whatsapp}
+                        onChange={(e) => handleInputChange("whatsapp", e.target.value)}
+                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 mt-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => setStep(1)}
+                      className="flex-1 border-i9-blue text-i9-blue hover:bg-i9-blue/10"
+                    >
+                      Voltar
+                    </Button>
+                    <Button
+                      onClick={handleStep2Next}
+                      className="flex-1 bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-3 text-lg transition-all duration-300 hover:scale-105"
+                    >
+                      {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Calcular Economia"}
+                    </Button>
+                  </div>
+                </div>
+              ) : isLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin w-16 h-16 mx-auto mb-6">
+                    <Sun className="w-16 h-16 text-i9-yellow" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-i9-blue mb-2">
+                    Calculando sua economia...
+                  </h3>
+                  <p className="text-gray-600">
+                    Estamos processando seus dados para calcular o potencial de economia com energia solar.
+                  </p>
                 </div>
               ) : (
                 <div>
