@@ -163,7 +163,7 @@ const SolarLandingPage = () => {
       
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-4 md:py-6 h-full flex flex-col">
-        <div className="max-w-6xl mx-auto h-full flex flex-col">
+        <div className="max-w-6xl mx-auto flex flex-col">
           {/* Header */}
           <div className="text-center mb-4">
             <div className="flex items-center justify-center mb-2">
