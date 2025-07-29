@@ -60,8 +60,20 @@ const SolarLandingPage = () => {
 
   const handleStep1Next = () => {
     const { city, energyBill, monthlyConsumption } = formData;
-    if (city && energyBill && monthlyConsumption) {
+    // Validação mais robusta com trim para remover espaços em branco
+    const isCityValid = city && city.trim() !== '';
+    const isEnergyBillValid = energyBill && energyBill.trim() !== '';
+    const isMonthlyConsumptionValid = monthlyConsumption && monthlyConsumption.trim() !== '';
+    
+    if (isCityValid && isEnergyBillValid && isMonthlyConsumptionValid) {
       setStep(2);
+    } else {
+      // Opcional: adicionar feedback visual ou console.log para debug
+      console.log('Campos obrigatórios não preenchidos:', {
+        city: isCityValid,
+        energyBill: isEnergyBillValid,
+        monthlyConsumption: isMonthlyConsumptionValid
+      });
     }
   };
 
@@ -76,20 +88,49 @@ const SolarLandingPage = () => {
     }
   };
 
-  const calculateSavings = () => {
+  const calculateSolarResults = () => {
     const billValue = parseFloat(formData.energyBill.replace(/[^\d,]/g, "").replace(",", "."));
+    const monthlyConsumption = parseFloat(formData.monthlyConsumption.replace(/[^\d,]/g, "").replace(",", "."));
+    
+    // Cálculos de economia
     const monthlySavings = billValue * 0.75; // 75% de economia estimada
     const yearlySavings = monthlySavings * 12;
     const twentyYearSavings = yearlySavings * 20;
-
+    
+    // Potencial de geração (assumindo que o sistema gerará 90% do consumo)
+    const monthlyGenerationKwh = monthlyConsumption * 0.9;
+    const yearlyGenerationKwh = monthlyGenerationKwh * 12;
+    
+    // Faixa de preço do sistema (baseado na potência necessária)
+    // Assumindo R$ 4.500 a R$ 6.000 por kWp instalado
+    // E que cada kWp gera aproximadamente 130 kWh/mês
+    const requiredKwp = monthlyGenerationKwh / 130;
+    const minPrice = requiredKwp * 4500;
+    const maxPrice = requiredKwp * 6000;
+    
     return {
       monthly: monthlySavings,
       yearly: yearlySavings,
       twentyYear: twentyYearSavings,
+      monthlyGenerationKwh,
+      yearlyGenerationKwh,
+      systemPowerKwp: requiredKwp,
+      priceRange: {
+        min: minPrice,
+        max: maxPrice
+      }
     };
   };
 
-  const savings = step === 3 ? calculateSavings() : { monthly: 0, yearly: 0, twentyYear: 0 };
+  const solarResults = step === 3 ? calculateSolarResults() : { 
+    monthly: 0, 
+    yearly: 0, 
+    twentyYear: 0,
+    monthlyGenerationKwh: 0,
+    yearlyGenerationKwh: 0,
+    systemPowerKwp: 0,
+    priceRange: { min: 0, max: 0 }
+  };
 
   const getStepTitle = () => {
     switch (step) {
@@ -111,7 +152,7 @@ const SolarLandingPage = () => {
 
   return (
     <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat relative"
+      className="h-screen bg-cover bg-center bg-no-repeat relative overflow-hidden"
       style={{ backgroundImage: `url(${solarHeroBg})` }}
     >
       {/* Overlay */}
@@ -121,40 +162,40 @@ const SolarLandingPage = () => {
       />
       
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-8 md:py-16">
-        <div className="max-w-4xl mx-auto">
+      <div className="relative z-10 container mx-auto px-4 py-4 md:py-6 h-full flex flex-col">
+        <div className="max-w-6xl mx-auto h-full flex flex-col">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center mb-4">
+          <div className="text-center mb-4">
+            <div className="flex items-center justify-center mb-2">
               <img 
                 src="/lovable-uploads/9db79ece-e986-4d58-ba47-4c0ba70668df.png" 
                 alt="i9 Solar" 
-                className="h-12 md:h-16 w-auto"
+                className="h-8 md:h-8 w-auto"
               />
             </div>
-            <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 leading-tight">
               Descubra quanto você pode economizar com energia solar!
             </h2>
-            <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
+            <p className="text-sm md:text-base text-white/90 max-w-2xl mx-auto">
               Simule sua economia gratuitamente e descubra como a energia solar pode 
               revolucionar sua conta de luz.
             </p>
           </div>
 
           {/* Form Card */}
-          <Card className="max-w-2xl mx-auto bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
-            <CardContent className="p-6 md:p-8">
+          <Card className="max-w-4x1 mx-40 bg-white/95 backdrop-blur-sm border-0 shadow-2xl flex-grow flex flex-col">
+            <CardContent className="p-4 md:p-5 flex-grow flex flex-col">
               {/* Progress Indicator */}
-              <div className="mb-8">
-                <div className="flex justify-between items-center mb-4">
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
                   {[1, 2, 3].map((stepNumber) => {
                     const StepIcon = stepNumber === 1 ? Calculator : stepNumber === 2 ? User : Sun;
                     return (
                       <div key={stepNumber} className="flex flex-col items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                           stepNumber <= step ? 'bg-i9-blue text-white' : 'bg-gray-200 text-gray-400'
                         }`}>
-                          <StepIcon className="w-5 h-5" />
+                          <StepIcon className="w-4 h-4" />
                         </div>
                         <span className={`text-xs mt-1 ${
                           stepNumber <= step ? 'text-i9-blue font-medium' : 'text-gray-400'
@@ -168,21 +209,21 @@ const SolarLandingPage = () => {
                 <Progress value={(step / 3) * 100} className="h-2" />
               </div>
               {step === 1 ? (
-                <div>
-                  <div className="flex items-center mb-6">
-                    <Calculator className="w-6 h-6 text-i9-blue mr-2" />
-                    <h3 className="text-2xl font-semibold text-i9-blue">
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center mb-3">
+                    <Calculator className="w-5 h-5 text-i9-blue mr-2" />
+                    <h3 className="text-xl font-semibold text-i9-blue">
                       Dados de consumo
                     </h3>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 flex-grow">
                     <div>
-                      <Label htmlFor="city" className="text-i9-blue font-medium">
+                      <Label htmlFor="city" className="text-i9-blue font-medium text-sm">
                         Cidade *
                       </Label>
                       <Select onValueChange={(value) => handleInputChange("city", value)}>
-                        <SelectTrigger className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue">
+                        <SelectTrigger className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9">
                           <SelectValue placeholder="Selecione sua cidade" />
                         </SelectTrigger>
                         <SelectContent className="bg-white border-gray-300 z-50">
@@ -196,7 +237,7 @@ const SolarLandingPage = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="energyBill" className="text-i9-blue font-medium">
+                      <Label htmlFor="energyBill" className="text-i9-blue font-medium text-sm">
                         Valor médio da conta de energia (R$) *
                       </Label>
                       <Input
@@ -205,12 +246,12 @@ const SolarLandingPage = () => {
                         placeholder="R$ 500,00"
                         value={formData.energyBill}
                         onChange={(e) => handleInputChange("energyBill", e.target.value)}
-                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
+                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="monthlyConsumption" className="text-i9-blue font-medium">
+                      <Label htmlFor="monthlyConsumption" className="text-i9-blue font-medium text-sm">
                         Consumo mensal (kWh) *
                       </Label>
                       <Input
@@ -219,30 +260,30 @@ const SolarLandingPage = () => {
                         placeholder="400 kWh"
                         value={formData.monthlyConsumption}
                         onChange={(e) => handleInputChange("monthlyConsumption", e.target.value)}
-                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
+                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9"
                       />
                     </div>
                   </div>
 
                   <Button
                     onClick={handleStep1Next}
-                    className="w-full mt-6 bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-3 text-lg transition-all duration-300 hover:scale-105"
+                    className="w-full mt-4 bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-2 text-base transition-all duration-300 hover:scale-105"
                   >
                     Próxima Etapa
                   </Button>
                 </div>
               ) : step === 2 ? (
-                <div>
-                  <div className="flex items-center mb-6">
-                    <User className="w-6 h-6 text-i9-blue mr-2" />
-                    <h3 className="text-2xl font-semibold text-i9-blue">
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center mb-3">
+                    <User className="w-5 h-5 text-i9-blue mr-2" />
+                    <h3 className="text-xl font-semibold text-i9-blue">
                       Seus dados
                     </h3>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 flex-grow">
                     <div>
-                      <Label htmlFor="name" className="text-i9-blue font-medium">
+                      <Label htmlFor="name" className="text-i9-blue font-medium text-sm">
                         Nome completo *
                       </Label>
                       <Input
@@ -251,12 +292,12 @@ const SolarLandingPage = () => {
                         placeholder="Digite seu nome completo"
                         value={formData.name}
                         onChange={(e) => handleInputChange("name", e.target.value)}
-                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
+                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="email" className="text-i9-blue font-medium">
+                      <Label htmlFor="email" className="text-i9-blue font-medium text-sm">
                         E-mail *
                       </Label>
                       <Input
@@ -265,12 +306,12 @@ const SolarLandingPage = () => {
                         placeholder="seu@email.com"
                         value={formData.email}
                         onChange={(e) => handleInputChange("email", e.target.value)}
-                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
+                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="whatsapp" className="text-i9-blue font-medium">
+                      <Label htmlFor="whatsapp" className="text-i9-blue font-medium text-sm">
                         WhatsApp *
                       </Label>
                       <Input
@@ -279,101 +320,121 @@ const SolarLandingPage = () => {
                         placeholder="(11) 99999-9999"
                         value={formData.whatsapp}
                         onChange={(e) => handleInputChange("whatsapp", e.target.value)}
-                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue"
+                        className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9"
                       />
                     </div>
                   </div>
 
-                  <div className="flex gap-3 mt-6">
+                  <div className="flex gap-3 mt-4">
                     <Button
                       variant="outline"
                       onClick={() => setStep(1)}
-                      className="flex-1 border-i9-blue text-i9-blue hover:bg-i9-blue/10"
+                      className="flex-1 border-i9-blue text-i9-blue hover:bg-i9-blue/10 py-2 text-sm"
                     >
                       Voltar
                     </Button>
                     <Button
                       onClick={handleStep2Next}
-                      className="flex-1 bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-3 text-lg transition-all duration-300 hover:scale-105"
+                      className="flex-1 bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-2 text-base transition-all duration-300 hover:scale-105"
                     >
-                      {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Calcular Economia"}
+                      {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Calcular Economia"}
                     </Button>
                   </div>
                 </div>
               ) : isLoading ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin w-16 h-16 mx-auto mb-6">
-                    <Sun className="w-16 h-16 text-i9-yellow" />
+                <div className="text-center py-8 flex-grow flex flex-col justify-center">
+                  <div className="animate-spin w-12 h-12 mx-auto mb-4">
+                    <Sun className="w-12 h-12 text-i9-yellow" />
                   </div>
-                  <h3 className="text-2xl font-semibold text-i9-blue mb-2">
+                  <h3 className="text-xl font-semibold text-i9-blue mb-2">
                     Calculando sua economia...
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 text-sm">
                     Estamos processando seus dados para calcular o potencial de economia com energia solar.
                   </p>
                 </div>
               ) : (
-                <div>
-                  <div className="text-center mb-6">
-                    <Sun className="w-12 h-12 text-i9-yellow mx-auto mb-4" />
-                    <h3 className="text-3xl font-bold text-i9-blue mb-2">
-                      Sua Economia Estimada
+                <div className="flex flex-col h-full">
+                  <div className="text-center mb-2">
+                    <Sun className="w-6 h-6 text-i9-yellow mx-auto mb-1" />
+                    <h3 className="text-lg font-bold text-i9-blue mb-1">
+                      Seus Resultados Solares
                     </h3>
-                    <p className="text-gray-600">
-                      Olá {formData.name}! Veja quanto você pode economizar:
+                    <p className="text-gray-600 text-xs">
+                      Olá {formData.name}! Veja o potencial do seu sistema:
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div className="text-center p-4 bg-i9-lightBlue/20 rounded-lg">
-                      <p className="text-sm text-i9-blue font-medium">Economia Mensal</p>
-                      <p className="text-2xl font-bold text-i9-blue">
-                        R$ {savings.monthly.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {/* Grid com 4 informações principais */}
+                  <div className="grid grid-cols-2 gap-2 mb-3 flex-grow">
+                    {/* Potencial de Geração */}
+                    <div className="text-center p-2 bg-gradient-to-r from-i9-yellow/20 to-i9-lightBlue/20 rounded-lg border border-i9-yellow/30">
+                      <p className="text-xs text-i9-blue font-semibold mb-1">Potencial de Geração</p>
+                      <p className="text-lg font-bold text-i9-blue">
+                        {solarResults.monthlyGenerationKwh.toFixed(0)} kWh
+                      </p>
+                      <p className="text-xs text-gray-600">por mês</p>
+                    </div>
+
+                    {/* Faixa de Preço */}
+                    <div className="text-center p-2 bg-i9-lightBlue/10 rounded-lg border border-i9-blue/20">
+                      <p className="text-xs text-i9-blue font-semibold mb-1">Faixa de Preço</p>
+                      <p className="text-sm font-bold text-i9-blue">
+                        R$ {(solarResults.priceRange.min/1000).toFixed(0)}k
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        a R$ {(solarResults.priceRange.max/1000).toFixed(0)}k
                       </p>
                     </div>
-                    <div className="text-center p-4 bg-i9-lightBlue/20 rounded-lg">
-                      <p className="text-sm text-i9-blue font-medium">Economia Anual</p>
-                      <p className="text-2xl font-bold text-i9-blue">
-                        R$ {savings.yearly.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+
+                    {/* Economia Mensal */}
+                    <div className="text-center p-2 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-xs text-green-700 font-semibold mb-1">Economia Mensal</p>
+                      <p className="text-lg font-bold text-green-700">
+                        R$ {solarResults.monthly.toFixed(0)}
                       </p>
+                      <p className="text-xs text-gray-600">por mês</p>
                     </div>
-                    <div className="text-center p-4 bg-i9-lightBlue/20 rounded-lg">
-                      <p className="text-sm text-i9-blue font-medium">Economia em 20 anos</p>
-                      <p className="text-2xl font-bold text-i9-blue">
-                        R$ {savings.twentyYear.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+
+                    {/* Economia Anual */}
+                    <div className="text-center p-2 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-xs text-green-700 font-semibold mb-1">Economia Anual</p>
+                      <p className="text-lg font-bold text-green-700">
+                        R$ {(solarResults.yearly/1000).toFixed(1)}k
                       </p>
+                      <p className="text-xs text-gray-600">por ano</p>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <Button
-                      className="w-full bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-3 text-lg transition-all duration-300 hover:scale-105"
-                      onClick={() => {
-                        // Ação para receber relatório
-                        alert("Relatório detalhado será enviado para seu e-mail!");
-                      }}
-                    >
-                      <FileText className="w-5 h-5 mr-2" />
-                      Receber Relatório Detalhado
-                    </Button>
+                  <div className="space-y-1.5">
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        className="bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-1.5 text-xs transition-all duration-300"
+                        onClick={() => {
+                          // Ação para receber relatório
+                          alert("Relatório detalhado será enviado para seu e-mail!");
+                        }}
+                      >
+                        <FileText className="w-3 h-3 mr-1" />
+                        Relatório
+                      </Button>
 
-                    <Button
-                      variant="outline"
-                      className="w-full border-i9-blue text-i9-blue hover:bg-i9-blue hover:text-white font-semibold py-3 text-lg transition-all duration-300"
-                      onClick={() => {
-                        // Ação para falar com consultor
-                        window.open(`https://wa.me/5511999999999?text=Olá! Gostaria de falar com um consultor sobre energia solar. Meu nome é ${formData.name}.`, '_blank');
-                      }}
-                    >
-                      <MessageCircle className="w-5 h-5 mr-2" />
-                      Falar com um Consultor
-                    </Button>
-                  </div>
-
-                  <div className="text-center mt-6">
+                      <Button
+                        variant="outline"
+                        className="border-i9-blue text-i9-blue hover:bg-i9-blue hover:text-white font-semibold py-1.5 text-xs transition-all duration-300"
+                        onClick={() => {
+                          // Ação para falar com consultor
+                          window.open(`https://wa.me/5511999999999?text=Olá! Gostaria de falar com um consultor sobre energia solar. Meu nome é ${formData.name}.`, '_blank');
+                        }}
+                      >
+                        <MessageCircle className="w-3 h-3 mr-1" />
+                        Consultor
+                      </Button>
+                    </div>
+                    
                     <button
                       onClick={() => setStep(1)}
-                      className="text-i9-blue hover:underline text-sm"
+                      className="w-full text-i9-blue hover:underline text-xs py-1"
                     >
                       ← Voltar e editar dados
                     </button>
@@ -384,8 +445,8 @@ const SolarLandingPage = () => {
           </Card>
 
           {/* Footer */}
-          <div className="text-center mt-8">
-            <p className="text-white/80 text-sm">
+          <div className="text-center mt-2">
+            <p className="text-white/80 text-xs">
               🔒 Seus dados estão protegidos conosco
             </p>
           </div>
