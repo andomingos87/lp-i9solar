@@ -88,36 +88,151 @@ const SolarLandingPage = () => {
     }
   };
 
+  // Constantes baseadas em calculo.js
+  const IRRADIANCIA_POR_CIDADE = {
+    'Bertioga': 4.6,
+    'Bragança Paulista': 5.2,
+    'Campinas': 5.4,
+    'Campos do Jordão': 5.1,
+    'Indaiatuba': 5.3,
+    'Itu': 5.3,
+    'Jaguariúna': 5.4,
+    'Jundiaí': 5.2,
+    'Limeira': 5.4,
+    'Monte Mor': 5.4,
+    'Piracicaba': 5.4,
+    'Porto Feliz': 5.3,
+    'Ribeirão Preto': 5.5,
+    'Salto': 5.3,
+    'Santos': 5.0,
+    'São Bernardo do Campo': 4.5,
+    'São José do Rio Preto': 5.4,
+    'São Paulo': 4.8,
+    'São Sebastião': 4.6,
+    'Sorocaba': 5.2,
+    'Valinhos': 5.4,
+    'Vinhedo': 5.4
+  };
+
+  const KITS_SOLARES = {
+    'APSystems': {
+      precoW: 4.05,
+      eficiencia: 0.72,
+      potenciaModulo: 565,
+      marcaModulo: 'APSystems'
+    },
+    'Canadian': {
+      precoW: 2.20,
+      eficiencia: 0.75,
+      potenciaModulo: 610,
+      marcaModulo: 'Canadian'
+    },
+    'Deye': {
+      precoW: 2.92,
+      eficiencia: 0.60,
+      potenciaModulo: 570,
+      marcaModulo: 'SE'
+    },
+    'Enphase': {
+      precoW: 3.63,
+      eficiencia: 0.78,
+      potenciaModulo: 610,
+      marcaModulo: 'Ronma'
+    },
+    'Hoymiles': {
+      precoW: 2.56,
+      eficiencia: 0.75,
+      potenciaModulo: 605,
+      marcaModulo: 'DMEGC - hoymiles'
+    },
+    'SAJ': {
+      precoW: 2.58,
+      eficiencia: 0.75,
+      potenciaModulo: 580,
+      marcaModulo: 'SAJ'
+    },
+    'SolarEdge': {
+      precoW: 3.90,
+      eficiencia: 0.83,
+      potenciaModulo: 585,
+      marcaModulo: 'DAH - SE'
+    },
+    'SolarEdge_EVC': {
+      precoW: 3.97,
+      eficiencia: 0.83,
+      potenciaModulo: 580,
+      marcaModulo: 'SolarEdge + EVC'
+    },
+    'SolaX_Bateria': {
+      precoW: 5.41,
+      eficiencia: 0.75,
+      potenciaModulo: 610,
+      marcaModulo: 'DAH'
+    },
+    'SolaX_Micro': {
+      precoW: 2.36,
+      eficiencia: 0.70,
+      potenciaModulo: 620,
+      marcaModulo: 'DAH SolaX'
+    }
+  };
+
   const calculateSolarResults = () => {
     const billValue = parseFloat(formData.energyBill.replace(/[^\d,]/g, "").replace(",", "."));
     const monthlyConsumption = parseFloat(formData.monthlyConsumption.replace(/[^\d,]/g, "").replace(",", "."));
+    
+    // Obter irradiância da cidade selecionada
+    const irradiancia = IRRADIANCIA_POR_CIDADE[formData.city] || 4.8; // default São Paulo
+    
+    // Calcular potência necessária baseada no consumo mensal
+    const dias = 30;
+    
+    // Encontrar kit com maior eficiência para cálculo de geração potencial
+    const kitMaiorEficiencia = Object.values(KITS_SOLARES).reduce((max, kit) => 
+      kit.eficiencia > max.eficiencia ? kit : max
+    );
+    
+    // Encontrar kits com menor e maior preço por W
+    const kitMenorPreco = Object.values(KITS_SOLARES).reduce((min, kit) => 
+      kit.precoW < min.precoW ? kit : min
+    );
+    
+    const kitMaiorPreco = Object.values(KITS_SOLARES).reduce((max, kit) => 
+      kit.precoW > max.precoW ? kit : max
+    );
+    
+    // Calcular potência necessária para atender o consumo
+    // Fórmula: potencia = consumoMensal / (dias * irradiancia * eficiencia)
+    const potenciaNecessaria = monthlyConsumption / (dias * irradiancia * kitMaiorEficiencia.eficiencia);
+    
+    // Calcular quantidade de módulos (arredondado para cima)
+    const quantModulos = Math.ceil((potenciaNecessaria * 1000) / kitMaiorEficiencia.potenciaModulo);
+    
+    // Potência final do sistema
+    const potenciaFinal = (quantModulos * kitMaiorEficiencia.potenciaModulo) / 1000; // em kW
+    
+    // Geração potencial mensal
+    const geracaoPotencial = potenciaFinal * 1000 * dias * irradiancia * kitMaiorEficiencia.eficiencia / 1000; // em kWh
+    
+    // Preços mínimo e máximo do sistema
+    const precoMin = Math.ceil(potenciaFinal * kitMenorPreco.precoW * 1000);
+    const precoMax = Math.ceil(potenciaFinal * kitMaiorPreco.precoW * 1000);
     
     // Cálculos de economia
     const monthlySavings = billValue * 0.75; // 75% de economia estimada
     const yearlySavings = monthlySavings * 12;
     const twentyYearSavings = yearlySavings * 20;
     
-    // Potencial de geração (assumindo que o sistema gerará 90% do consumo)
-    const monthlyGenerationKwh = monthlyConsumption * 0.9;
-    const yearlyGenerationKwh = monthlyGenerationKwh * 12;
-    
-    // Faixa de preço do sistema (baseado na potência necessária)
-    // Assumindo R$ 4.500 a R$ 6.000 por kWp instalado
-    // E que cada kWp gera aproximadamente 130 kWh/mês
-    const requiredKwp = monthlyGenerationKwh / 130;
-    const minPrice = requiredKwp * 4500;
-    const maxPrice = requiredKwp * 6000;
-    
     return {
       monthly: monthlySavings,
       yearly: yearlySavings,
       twentyYear: twentyYearSavings,
-      monthlyGenerationKwh,
-      yearlyGenerationKwh,
-      systemPowerKwp: requiredKwp,
+      monthlyGenerationKwh: geracaoPotencial,
+      yearlyGenerationKwh: geracaoPotencial * 12,
+      systemPowerKwp: potenciaFinal,
       priceRange: {
-        min: minPrice,
-        max: maxPrice
+        min: precoMin,
+        max: precoMax
       }
     };
   };
@@ -353,17 +468,21 @@ const SolarLandingPage = () => {
                     Estamos processando seus dados para calcular o potencial de economia com energia solar.
                   </p>
                 </div>
-              ) : (
-                <div className="flex flex-col h-full">
-                  <div className="text-center mb-2">
-                    <Sun className="w-6 h-6 text-i9-yellow mx-auto mb-1" />
-                    <h3 className="text-lg font-bold text-i9-blue mb-1">
-                      Seus Resultados Solares
-                    </h3>
-                    <p className="text-gray-600 text-xs">
-                      Olá {formData.name}! Veja o potencial do seu sistema:
-                    </p>
-                  </div>
+              ) : (() => {
+                // Calcular resultados solares usando a nova função
+                const solarResults = calculateSolarResults();
+                
+                return (
+                  <div className="flex flex-col h-full">
+                    <div className="text-center mb-2">
+                      <Sun className="w-6 h-6 text-i9-yellow mx-auto mb-1" />
+                      <h3 className="text-lg font-bold text-i9-blue mb-1">
+                        Seus Resultados Solares
+                      </h3>
+                      <p className="text-gray-600 text-xs">
+                        Olá {formData.name}! Veja o potencial do seu sistema:
+                      </p>
+                    </div>
 
                   {/* Grid com 4 informações principais */}
                   <div className="grid grid-cols-2 gap-2 mb-3 flex-grow">
@@ -385,24 +504,6 @@ const SolarLandingPage = () => {
                       <p className="text-xs text-gray-600">
                         a R$ {(solarResults.priceRange.max/1000).toFixed(0)}k
                       </p>
-                    </div>
-
-                    {/* Economia Mensal */}
-                    <div className="text-center p-2 bg-green-50 rounded-lg border border-green-200">
-                      <p className="text-xs text-green-700 font-semibold mb-1">Economia Mensal</p>
-                      <p className="text-lg font-bold text-green-700">
-                        R$ {solarResults.monthly.toFixed(0)}
-                      </p>
-                      <p className="text-xs text-gray-600">por mês</p>
-                    </div>
-
-                    {/* Economia Anual */}
-                    <div className="text-center p-2 bg-green-50 rounded-lg border border-green-200">
-                      <p className="text-xs text-green-700 font-semibold mb-1">Economia Anual</p>
-                      <p className="text-lg font-bold text-green-700">
-                        R$ {(solarResults.yearly/1000).toFixed(1)}k
-                      </p>
-                      <p className="text-xs text-gray-600">por ano</p>
                     </div>
                   </div>
 
@@ -440,7 +541,9 @@ const SolarLandingPage = () => {
                     </button>
                   </div>
                 </div>
-              )}
+                );
+              })()
+            }
             </CardContent>
           </Card>
 
