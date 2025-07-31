@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Loader2 } from "lucide-react";
+import { User, Loader2, AlertCircle } from "lucide-react";
 import { FormData } from "@/types/solar";
+import { useState } from "react";
 
 interface Step2PersonalFormProps {
   formData: FormData;
@@ -19,6 +20,80 @@ export const Step2PersonalForm = ({
   onBack, 
   isLoading 
 }: Step2PersonalFormProps) => {
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+
+  // Função para validar e-mail
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Função para aplicar máscara no WhatsApp
+  const formatWhatsApp = (value: string): string => {
+    // Remove tudo que não é número
+    const numbers = value.replace(/\D/g, '');
+    
+    // Limita a 11 dígitos
+    const limited = numbers.slice(0, 11);
+    
+    // Aplica a máscara
+    if (limited.length <= 2) {
+      return `(${limited}`;
+    } else if (limited.length <= 7) {
+      return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
+    } else {
+      return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
+    }
+  };
+
+  // Função para validar campos
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case 'name':
+        return value.trim().length < 2 ? 'O campo nome é obrigatório' : '';
+      case 'email':
+        return !isValidEmail(value) ? 'O campo e-mail é obrigatório' : '';
+      case 'whatsapp':
+        const numbers = value.replace(/\D/g, '');
+        return numbers.length < 10 ? 'O campo whatsapp é obrigatório' : '';
+      default:
+        return '';
+    }
+  };
+
+  // Handler para mudanças nos inputs
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    let processedValue = value;
+    
+    // Aplica máscara no WhatsApp
+    if (field === 'whatsapp') {
+      processedValue = formatWhatsApp(value);
+    }
+    
+    // Atualiza o valor
+    onInputChange(field, processedValue);
+    
+    // Valida o campo
+    const error = validateField(field, processedValue);
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  // Função para validar todos os campos antes de prosseguir
+  const handleNext = () => {
+    const newErrors: {[key: string]: string} = {};
+    
+    newErrors.name = validateField('name', formData.name);
+    newErrors.email = validateField('email', formData.email);
+    newErrors.whatsapp = validateField('whatsapp', formData.whatsapp);
+    
+    setErrors(newErrors);
+    
+    // Se não há erros, prossegue
+    const hasErrors = Object.values(newErrors).some(error => error !== '');
+    if (!hasErrors) {
+      onNext();
+    }
+  };
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center mb-3">
@@ -38,9 +113,18 @@ export const Step2PersonalForm = ({
             type="text"
             placeholder="Digite seu nome completo"
             value={formData.name}
-            onChange={(e) => onInputChange("name", e.target.value)}
-            className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9"
+            onChange={(e) => handleInputChange("name", e.target.value)}
+            className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
+              errors.name ? 'border-red-500 focus:border-red-500' : ''
+            }`}
+            required
           />
+          {errors.name && (
+            <div className="flex items-center mt-1 text-red-500 text-xs">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              {errors.name}
+            </div>
+          )}
         </div>
 
         <div>
@@ -52,9 +136,18 @@ export const Step2PersonalForm = ({
             type="email"
             placeholder="seu@email.com"
             value={formData.email}
-            onChange={(e) => onInputChange("email", e.target.value)}
-            className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9"
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
+              errors.email ? 'border-red-500 focus:border-red-500' : ''
+            }`}
+            required
           />
+          {errors.email && (
+            <div className="flex items-center mt-1 text-red-500 text-xs">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              {errors.email}
+            </div>
+          )}
         </div>
 
         <div>
@@ -66,9 +159,19 @@ export const Step2PersonalForm = ({
             type="tel"
             placeholder="(11) 99999-9999"
             value={formData.whatsapp}
-            onChange={(e) => onInputChange("whatsapp", e.target.value)}
-            className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9"
+            onChange={(e) => handleInputChange("whatsapp", e.target.value)}
+            className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
+              errors.whatsapp ? 'border-red-500 focus:border-red-500' : ''
+            }`}
+            maxLength={15}
+            required
           />
+          {errors.whatsapp && (
+            <div className="flex items-center mt-1 text-red-500 text-xs">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              {errors.whatsapp}
+            </div>
+          )}
         </div>
       </div>
 
@@ -81,7 +184,7 @@ export const Step2PersonalForm = ({
           Voltar
         </Button>
         <Button
-          onClick={onNext}
+          onClick={handleNext}
           className="flex-1 bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-2 text-base transition-all duration-300 hover:scale-105"
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Calcular Economia"}
