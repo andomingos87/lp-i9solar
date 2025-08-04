@@ -56,6 +56,8 @@ export const Step2PersonalForm = ({
       case 'whatsapp':
         const numbers = value.replace(/\D/g, '');
         return numbers.length < 10 ? 'O campo whatsapp é obrigatório' : '';
+      case 'observations':
+        return ''; // Campo opcional, não precisa validação
       default:
         return '';
     }
@@ -70,12 +72,19 @@ export const Step2PersonalForm = ({
       processedValue = formatWhatsApp(value);
     }
     
+    // Limita nome a 50 caracteres
+    if (field === 'name' && value.length > 50) {
+      processedValue = value.slice(0, 50);
+    }
+    
     // Atualiza o valor
     onInputChange(field, processedValue);
     
-    // Valida o campo
-    const error = validateField(field, processedValue);
-    setErrors(prev => ({ ...prev, [field]: error }));
+    // Valida o campo (apenas campos obrigatórios)
+    if (field !== 'observations') {
+      const error = validateField(field, processedValue);
+      setErrors(prev => ({ ...prev, [field]: error }));
+    }
   };
 
   // Função para validar todos os campos antes de prosseguir
@@ -103,75 +112,96 @@ export const Step2PersonalForm = ({
         </h3>
       </div>
 
-      <div className="space-y-3 flex-grow">
-        <div>
-          <Label htmlFor="name" className="text-i9-blue font-medium text-sm">
-            Nome completo *
-          </Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Digite seu nome completo"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
-              errors.name ? 'border-red-500 focus:border-red-500' : ''
-            }`}
-            required
-          />
-          {errors.name && (
-            <div className="flex items-center mt-1 text-red-500 text-xs">
-              <AlertCircle className="w-3 h-3 mr-1" />
-              {errors.name}
-            </div>
-          )}
+      <div className="space-y-4 flex-grow">
+        {/* Linha 1: Nome completo e E-mail */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="name" className="text-i9-blue font-medium text-sm">
+              Nome completo *
+            </Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Digite seu nome completo"
+              value={formData.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+              className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
+                errors.name ? 'border-red-500 focus:border-red-500' : ''
+              }`}
+              maxLength={50}
+              required
+            />
+            {errors.name && (
+              <div className="flex items-center mt-1 text-red-500 text-xs">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                {errors.name}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="email" className="text-i9-blue font-medium text-sm">
+              E-mail *
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
+                errors.email ? 'border-red-500 focus:border-red-500' : ''
+              }`}
+              required
+            />
+            {errors.email && (
+              <div className="flex items-center mt-1 text-red-500 text-xs">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                {errors.email}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="email" className="text-i9-blue font-medium text-sm">
-            E-mail *
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="seu@email.com"
-            value={formData.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
-            className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
-              errors.email ? 'border-red-500 focus:border-red-500' : ''
-            }`}
-            required
-          />
-          {errors.email && (
-            <div className="flex items-center mt-1 text-red-500 text-xs">
-              <AlertCircle className="w-3 h-3 mr-1" />
-              {errors.email}
-            </div>
-          )}
-        </div>
+        {/* Linha 2: WhatsApp e Observações */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="whatsapp" className="text-i9-blue font-medium text-sm">
+              WhatsApp *
+            </Label>
+            <Input
+              id="whatsapp"
+              type="tel"
+              placeholder="(11) 99999-9999"
+              value={formData.whatsapp}
+              onChange={(e) => handleInputChange("whatsapp", e.target.value)}
+              className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
+                errors.whatsapp ? 'border-red-500 focus:border-red-500' : ''
+              }`}
+              maxLength={15}
+              required
+            />
+            {errors.whatsapp && (
+              <div className="flex items-center mt-1 text-red-500 text-xs">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                {errors.whatsapp}
+              </div>
+            )}
+          </div>
 
-        <div>
-          <Label htmlFor="whatsapp" className="text-i9-blue font-medium text-sm">
-            WhatsApp *
-          </Label>
-          <Input
-            id="whatsapp"
-            type="tel"
-            placeholder="(11) 99999-9999"
-            value={formData.whatsapp}
-            onChange={(e) => handleInputChange("whatsapp", e.target.value)}
-            className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
-              errors.whatsapp ? 'border-red-500 focus:border-red-500' : ''
-            }`}
-            maxLength={15}
-            required
-          />
-          {errors.whatsapp && (
-            <div className="flex items-center mt-1 text-red-500 text-xs">
-              <AlertCircle className="w-3 h-3 mr-1" />
-              {errors.whatsapp}
-            </div>
-          )}
+          <div>
+            <Label htmlFor="observations" className="text-i9-blue font-medium text-sm">
+              Observações (opcional)
+            </Label>
+            <Input
+              id="observations"
+              type="text"
+              placeholder="Alguma informação adicional..."
+              value={formData.observations}
+              onChange={(e) => handleInputChange("observations", e.target.value)}
+              className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9"
+            />
+          </div>
         </div>
       </div>
 

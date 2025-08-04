@@ -6,6 +6,7 @@ export interface FormData {
   installationType: string;
   energyBill: string;
   monthlyConsumption: string;
+  observations: string;
 }
 
 export interface SolarResults {
@@ -14,6 +15,9 @@ export interface SolarResults {
     min: number;
     max: number;
   };
+  paybackYears: number;
+  co2AvoidedPerYear: number;
+  equivalentTrees: number;
 }
 
 export interface KitSolar {

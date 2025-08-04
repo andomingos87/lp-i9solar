@@ -3,6 +3,7 @@ import { IRRADIANCIA_POR_CIDADE, KITS_SOLARES } from '@/constants/solarData';
 
 export const calculateSolarResults = (formData: FormData): SolarResults => {
   const consumoMensal = parseFloat(formData.monthlyConsumption) || 0;
+  const valorConta = parseFloat(formData.energyBill) || 0;
   const irradiancia = IRRADIANCIA_POR_CIDADE[formData.city] || 5.0;
   
   // Calcular potência necessária do sistema (kWp)
@@ -21,8 +22,24 @@ export const calculateSolarResults = (formData: FormData): SolarResults => {
     max: Math.max(...precos)
   };
   
+  // Calcular tarifa média por kWh para payback
+  const tarifaMedia = consumoMensal > 0 ? valorConta / consumoMensal : 0.65; // fallback para R$ 0,65/kWh
+  
+  // Payback em anos (baseado na economia potencial)
+  const investimentoMedio = (priceRange.min + priceRange.max) / 2;
+  const economiaAnualEstimada = monthlyGenerationKwh * 12 * tarifaMedia;
+  const paybackYears = economiaAnualEstimada > 0 ? investimentoMedio / economiaAnualEstimada : 0;
+  
+  // Benefícios ambientais
+  const geracaoAnual = monthlyGenerationKwh * 12;
+  const co2AvoidedPerYear = geracaoAnual * 0.0817; // 0.0817 kg CO₂/kWh (fator brasileiro)
+  const equivalentTrees = co2AvoidedPerYear / 22; // 1 árvore absorve ~22kg CO₂/ano
+  
   return {
     monthlyGenerationKwh,
-    priceRange
+    priceRange,
+    paybackYears,
+    co2AvoidedPerYear,
+    equivalentTrees
   };
 };

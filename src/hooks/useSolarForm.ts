@@ -10,6 +10,7 @@ export const useSolarForm = () => {
     installationType: "",
     energyBill: "",
     monthlyConsumption: "",
+    observations: "",
   });
 
   const handleInputChange = (field: keyof FormData, value: string) => {
