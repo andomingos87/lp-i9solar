@@ -101,7 +101,6 @@ export const Step3Results = ({
         </Button>
         
         {/* <p className="text-center text-xs text-gray-500 px-4">
-        
           💬 Receba uma proposta personalizada via WhatsApp com todos os detalhes do seu projeto
         </p> */}
         
