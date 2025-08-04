@@ -7,6 +7,7 @@ export const useSolarForm = () => {
     email: "",
     whatsapp: "",
     city: "",
+    installationType: "",
     energyBill: "",
     monthlyConsumption: "",
   });
@@ -16,14 +17,16 @@ export const useSolarForm = () => {
   };
 
   const validateStep1 = (): boolean => {
-    const { city, energyBill, monthlyConsumption } = formData;
+    const { city, installationType, energyBill, monthlyConsumption } = formData;
     const isCityValid = city && city.trim() !== '';
+    const isInstallationTypeValid = installationType && installationType.trim() !== '';
     const isEnergyBillValid = energyBill && energyBill.trim() !== '';
     const isMonthlyConsumptionValid = monthlyConsumption && monthlyConsumption.trim() !== '';
     
-    if (!isCityValid || !isEnergyBillValid || !isMonthlyConsumptionValid) {
+    if (!isCityValid || !isInstallationTypeValid || !isEnergyBillValid || !isMonthlyConsumptionValid) {
       console.log('Campos obrigatórios não preenchidos:', {
         city: isCityValid,
+        installationType: isInstallationTypeValid,
         energyBill: isEnergyBillValid,
         monthlyConsumption: isMonthlyConsumptionValid
       });

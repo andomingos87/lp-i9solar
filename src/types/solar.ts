@@ -3,6 +3,7 @@ export interface FormData {
   email: string;
   whatsapp: string;
   city: string;
+  installationType: string;
   energyBill: string;
   monthlyConsumption: string;
 }
