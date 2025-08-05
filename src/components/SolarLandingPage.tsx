@@ -82,7 +82,7 @@ const SolarLandingPage = () => {
 
   return (
     <div 
-      className="h-screen bg-cover bg-center bg-no-repeat relative overflow-hidden"
+      className="min-h-screen bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: `url(${solarHeroBg})` }}
     >
       {/* Overlay */}
@@ -92,19 +92,21 @@ const SolarLandingPage = () => {
       />
       
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-4 md:py-6 h-full flex flex-col">
-        <div className="max-w-6xl mx-auto flex flex-col">
+      <div className="relative z-10 container mx-auto px-2 md:px-4 py-2 md:py-6 min-h-screen flex flex-col">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-none flex-1">
           {/* Header */}
           <SolarHeader />
 
           {/* Form Card */}
-          <Card className="max-w-4x1 mx-40 bg-white/95 backdrop-blur-sm border-0 shadow-2xl flex-grow flex flex-col">
-            <CardContent className="p-4 md:p-5 flex-grow flex flex-col">
+          <Card className="max-w-4xl mx-auto w-full bg-white/95 backdrop-blur-sm border-0 shadow-2xl md:flex-none flex-1 flex flex-col md:max-h-none max-h-screen overflow-hidden desktop-adaptive">
+            <CardContent className="p-3 md:p-6 md:flex-none flex-1 flex flex-col md:overflow-visible overflow-y-auto mobile-scroll">
               {/* Progress Indicator */}
               <ProgressIndicator currentStep={step} />
               
               {/* Step Content */}
-              {renderStepContent()}
+              <div className="md:flex-none flex-1 md:overflow-visible overflow-y-auto">
+                {renderStepContent()}
+              </div>
             </CardContent>
           </Card>
 

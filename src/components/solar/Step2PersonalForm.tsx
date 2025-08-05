@@ -112,9 +112,9 @@ export const Step2PersonalForm = ({
         </h3>
       </div>
 
-      <div className="space-y-4 flex-grow">
+      <div className="space-y-3 md:space-y-4 flex-grow">
         {/* Linha 1: Nome completo e E-mail */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="name" className="text-i9-blue font-medium text-sm">
               Nome completo *
@@ -125,7 +125,7 @@ export const Step2PersonalForm = ({
               placeholder="Digite seu nome completo"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
-              className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
+              className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-10 text-sm ${
                 errors.name ? 'border-red-500 focus:border-red-500' : ''
               }`}
               maxLength={50}
@@ -149,7 +149,7 @@ export const Step2PersonalForm = ({
               placeholder="seu@email.com"
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
-              className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
+              className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-10 text-sm ${
                 errors.email ? 'border-red-500 focus:border-red-500' : ''
               }`}
               required
@@ -164,7 +164,7 @@ export const Step2PersonalForm = ({
         </div>
 
         {/* Linha 2: WhatsApp e Observações */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="whatsapp" className="text-i9-blue font-medium text-sm">
               WhatsApp *
@@ -175,7 +175,7 @@ export const Step2PersonalForm = ({
               placeholder="(11) 99999-9999"
               value={formData.whatsapp}
               onChange={(e) => handleInputChange("whatsapp", e.target.value)}
-              className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9 ${
+              className={`mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-10 text-sm ${
                 errors.whatsapp ? 'border-red-500 focus:border-red-500' : ''
               }`}
               maxLength={15}
@@ -199,23 +199,23 @@ export const Step2PersonalForm = ({
               placeholder="Alguma informação adicional..."
               value={formData.observations}
               onChange={(e) => handleInputChange("observations", e.target.value)}
-              className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-9"
+              className="mt-1 border-gray-300 focus:border-i9-blue focus:ring-i9-blue h-10 text-sm"
             />
           </div>
         </div>
       </div>
 
-      <div className="flex gap-3 mt-4">
+      <div className="flex gap-3 mt-3 md:mt-4">
         <Button
           variant="outline"
           onClick={onBack}
-          className="flex-1 border-i9-blue text-i9-blue hover:bg-i9-blue/10 py-2 text-sm"
+          className="flex-1 border-i9-blue text-i9-blue hover:bg-i9-blue/10 py-3 md:py-2 text-sm touch-target"
         >
           Voltar
         </Button>
         <Button
           onClick={handleNext}
-          className="flex-1 bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-2 text-base transition-all duration-300 hover:scale-105"
+          className="flex-1 bg-i9-yellow hover:bg-i9-yellow/90 text-i9-blue font-semibold py-3 md:py-2 text-base transition-all duration-300 hover:scale-105 touch-target"
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Calcular Economia"}
         </Button>
