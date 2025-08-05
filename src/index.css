@@ -83,8 +83,26 @@ All colors MUST be HSL.
     
     /* Fix virtual keyboard covering inputs */
     .keyboard-aware {
-      height: 100vh;
-      height: 100dvh; /* Dynamic viewport height for modern browsers */
+      min-height: 100vh;
+      min-height: 100dvh; /* Dynamic viewport height for modern browsers */
+    }
+    
+    /* Ensure background image always covers full screen on mobile */
+    .mobile-background {
+      background-attachment: scroll !important;
+      background-size: cover !important;
+      background-position: center center !important;
+      background-repeat: no-repeat !important;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    
+    /* Fix for iOS Safari background issues */
+    @supports (-webkit-touch-callout: none) {
+      .mobile-background {
+        background-attachment: scroll;
+        min-height: -webkit-fill-available;
+      }
     }
     
     /* Ensure inputs scroll into view when focused */

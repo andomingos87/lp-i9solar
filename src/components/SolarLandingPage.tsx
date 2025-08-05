@@ -13,6 +13,7 @@ import { Step3Results } from "@/components/solar/Step3Results";
 // Hooks and utilities
 import { useSolarForm } from "@/hooks/useSolarForm";
 import { useVirtualKeyboard } from "@/hooks/useVirtualKeyboard";
+import { useResponsiveBackground } from "@/hooks/useResponsiveBackground";
 import { calculateSolarResults } from "@/utils/solarCalculations";
 
 const SolarLandingPage = () => {
@@ -22,6 +23,9 @@ const SolarLandingPage = () => {
   
   // Handle virtual keyboard issues on mobile
   useVirtualKeyboard();
+  
+  // Handle responsive background
+  const backgroundRef = useResponsiveBackground();
 
   const handleStep1Next = () => {
     if (validateStep1()) {
@@ -86,7 +90,8 @@ const SolarLandingPage = () => {
 
   return (
     <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat relative keyboard-aware"
+      ref={backgroundRef}
+      className="min-h-screen bg-cover bg-center bg-no-repeat relative keyboard-aware mobile-background"
       style={{ backgroundImage: `url(${solarHeroBg})` }}
     >
       {/* Overlay */}
