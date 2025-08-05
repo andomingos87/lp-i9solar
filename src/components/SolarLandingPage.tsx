@@ -12,12 +12,16 @@ import { Step3Results } from "@/components/solar/Step3Results";
 
 // Hooks and utilities
 import { useSolarForm } from "@/hooks/useSolarForm";
+import { useVirtualKeyboard } from "@/hooks/useVirtualKeyboard";
 import { calculateSolarResults } from "@/utils/solarCalculations";
 
 const SolarLandingPage = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const { formData, handleInputChange, validateStep1, validateStep2 } = useSolarForm();
+  
+  // Handle virtual keyboard issues on mobile
+  useVirtualKeyboard();
 
   const handleStep1Next = () => {
     if (validateStep1()) {
@@ -82,7 +86,7 @@ const SolarLandingPage = () => {
 
   return (
     <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat relative"
+      className="min-h-screen bg-cover bg-center bg-no-repeat relative keyboard-aware"
       style={{ backgroundImage: `url(${solarHeroBg})` }}
     >
       {/* Overlay */}

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { KeyboardAwareInput } from "@/components/ui/KeyboardAwareInput";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calculator, Info } from "lucide-react";
@@ -71,7 +71,7 @@ export const Step1ConsumptionForm = ({
             <Label htmlFor="energyBill" className="text-i9-blue font-medium text-sm">
               Valor médio da conta de energia (R$) *
             </Label>
-            <Input
+            <KeyboardAwareInput
               id="energyBill"
               type="text"
               placeholder="R$ 500,00"
@@ -96,7 +96,7 @@ export const Step1ConsumptionForm = ({
                 </div>
               </div>
             </div>
-            <Input
+            <KeyboardAwareInput
               id="monthlyConsumption"
               type="text"
               placeholder="400 kWh"

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { KeyboardAwareInput } from "@/components/ui/KeyboardAwareInput";
 import { Label } from "@/components/ui/label";
 import { User, Loader2, AlertCircle } from "lucide-react";
 import { FormData } from "@/types/solar";
@@ -119,7 +119,7 @@ export const Step2PersonalForm = ({
             <Label htmlFor="name" className="text-i9-blue font-medium text-sm">
               Nome completo *
             </Label>
-            <Input
+            <KeyboardAwareInput
               id="name"
               type="text"
               placeholder="Digite seu nome completo"
@@ -143,7 +143,7 @@ export const Step2PersonalForm = ({
             <Label htmlFor="email" className="text-i9-blue font-medium text-sm">
               E-mail *
             </Label>
-            <Input
+            <KeyboardAwareInput
               id="email"
               type="email"
               placeholder="seu@email.com"
@@ -169,7 +169,7 @@ export const Step2PersonalForm = ({
             <Label htmlFor="whatsapp" className="text-i9-blue font-medium text-sm">
               WhatsApp *
             </Label>
-            <Input
+            <KeyboardAwareInput
               id="whatsapp"
               type="tel"
               placeholder="(11) 99999-9999"
@@ -193,7 +193,7 @@ export const Step2PersonalForm = ({
             <Label htmlFor="observations" className="text-i9-blue font-medium text-sm">
               Observações (opcional)
             </Label>
-            <Input
+            <KeyboardAwareInput
               id="observations"
               type="text"
               placeholder="Alguma informação adicional..."
